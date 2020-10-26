@@ -1,0 +1,91 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<head>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-storage.js"></script>
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+    https://firebase.google.com/docs/web/setup#available-libraries -->
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+        apiKey: "AIzaSyDVV5uvlhS5kAlSzec6R2guMrHxlgYYcIE",
+        authDomain: "asp-net-upload-test.firebaseapp.com",
+        databaseURL: "https://asp-net-upload-test.firebaseio.com",
+        projectId: "asp-net-upload-test",
+        storageBucket: "asp-net-upload-test.appspot.com",
+        messagingSenderId: "132942372573",
+        appId: "1:132942372573:web:1da3192a8731c2bbbb4534"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+    </script>
+</head>
+
+<div class="text-center">
+    <h1 class="display-4" style="margin-bottom: 200px;">Upload a file in <img src="~/PngItem_316562.png" width="120"
+height="100" />
+    </h1>
+
+    <!-- The `multiple` attribute lets users select multiple files. -->
+    <input type="file" id="file-selector" multiple>
+    <script>
+        const fileSelector = document.getElementById('file-selector');
+        fileSelector.addEventListener('change', (event) => {
+        const fileList = event.target.files;
+        var storageRef = firebase.storage().ref();
+        var file = fileList[0];
+        var thisRef = storageRef.child(file.name);
+
+        var uploadTask = thisRef.put(file);
+
+        // Register three observers:
+        // 1. 'state_changed' observer, called any time the state changes
+        // 2. Error observer, called on failure
+        // 3. Completion observer, called on successful completion
+        uploadTask.on('state_changed', function (snapshot) {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+        document.getElementById("progressTxt").innerHTML = 'Upload is ' + progress.toFixed(1) + '% done';
+
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+        case firebase.storage.TaskState.PAUSED: // or 'paused'
+        console.log('Upload is paused');
+        document.getElementById("statusTxt").innerHTML = "paused";
+        break;
+        case firebase.storage.TaskState.RUNNING: // or 'running'
+        console.log('Upload is running');
+        document.getElementById("statusTxt").innerHTML = "running";
+        break;
+        }
+        }, function (error) {
+        // Handle unsuccessful uploads
+        }, function () {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+        console.log('File available at', downloadURL);
+        document.getElementById("statusTxt").innerHTML = "Finished";
+        document.getElementById("downloadUrlTxt").innerHTML = "Link";
+        document.getElementById("downloadUrlTxt").href = downloadURL;
+        });
+        });
+        console.log(fileList);
+        });
+    </script>
+
+    <p><span id='progressTxt'></span></p>
+    <p>Status: <span id='statusTxt'></span></p>
+    <p>Download URL: <a id='downloadUrlTxt' , target="_blank"></a></p>
+
+</div>
